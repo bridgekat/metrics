@@ -8,3 +8,5 @@ name = "Metrics"
 [[lean_exe]]
 name = "metrics"
 root = "Main"
+# The extractor imports the target project's modules and runs their initializers.
+supportInterpreter = true
