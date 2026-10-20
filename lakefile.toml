@@ -1,0 +1,10 @@
+name = "metrics"
+version = "0.1.0"
+defaultTargets = ["metrics"]
+
+[[lean_lib]]
+name = "Metrics"
+
+[[lean_exe]]
+name = "metrics"
+root = "Main"
