@@ -192,6 +192,9 @@ unsafe def analyze (c : Cfg) (r : R) (ci : ConstantInfo) (full : Bool) : MetaM (
       out := out.push s!"\"vc\":{jarr vconsts}"
       out := out.push s!"\"fp\":{jarr fps}"
       out := out.push s!"\"ls\":{jarr ((← r.seq.get).map toString)},\"dh\":{← r.deadHave.get}"
+      let dn ← r.deadNames.get
+      unless dn.isEmpty do
+        out := out.push s!"\"dn\":{jarr (dn.map fun (n, h) => jarr #[jstr n.eraseMacroScopes.toString, jstr h.toString])}"
       if let .const k _ := body.getAppFn then
         if let some id := c.cid[k]? then
           out := out.push s!"\"bh\":{id},\"ba\":{body.getAppNumArgs}"

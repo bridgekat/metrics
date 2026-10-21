@@ -190,6 +190,7 @@ Three results of the experiments are worth knowing before using the numbers:
 | `fp` | Lemma trees of size 3 or more: hash and size. |
 | `ls` | Lemma sequence (constant ids), up to 4000. |
 | `dh` | Number of unused proof bindings. |
+| `dn` | For each unused proof binding, `[name, head]`: the name it binds (`this` when anonymous) and the constant its proof applies, to find it in the source by. Absent when `dh` is 0. |
 | `bh`, `ba` | Constant at the head of the proof term, and its number of arguments. |
 | `b` | Per binder: kind (`d`, `i`, `s`, `I`), hypothesis?, class, occurrences in the statement and how many of them as a direct argument, the same two for the proof term (`null` when the term does not bind it), uses of a class-typed binder as `[class consumed at, consumer, argument index, site]`, the constants it is passed to directly as `[constant, argument index]`, and its name. |
 

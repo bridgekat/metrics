@@ -24,6 +24,13 @@ namespace Metrics
 def auxValue? (c : Cfg) (n : Name) : Option Expr :=
   if c.aux.contains n then (c.env.find? n).bind (·.value? (allowOpaque := true)) else none
 
+/-- The constant at the head of a proof, under binders and applications, or anonymous. -/
+partial def headConst : Expr → Name
+  | .mdata _ b | .lam _ _ b _ | .letE _ _ _ b _ => headConst b
+  | .app f _ => headConst f
+  | .const n _ => n
+  | _ => .anonymous
+
 /-- Whether a term is visibly a proof: headed by a theorem or by one of the hypotheses. -/
 partial def proofHead (c : Cfg) (fv : FVMap) : Expr → Bool
   | .mdata _ b | .lam _ _ b _ | .letE _ _ _ b _ => proofHead c fv b
@@ -73,9 +80,10 @@ unsafe def visitCore (c : Cfg) (r : R) (fv : FVMap) (e : Expr) : BaseIO VI := do
         return ← visit c r fv e'
     -- `have _ := v; b` where `b` ignores the proof `v`: `v` is not part of the proof. (A lambda
     -- that ignores a *value* is everywhere in types, as a constant family applied to an index.)
-    if let .lam _ _ b _ := f then
+    if let .lam n _ b _ := f then
       if args.size ≥ 1 && !b.hasLooseBVar 0 && proofHead c fv args[0]! then
         r.deadHave.modify (· + 1)
+        r.deadNames.modify (·.push (n, headConst args[0]!))
         let bi ← visit c r fv b
         let mut tree := sadd bi.tree args.size
         let mut depth := bi.depth
@@ -151,13 +159,14 @@ unsafe def visitCore (c : Cfg) (r : R) (fv : FVMap) (e : Expr) : BaseIO VI := do
     r.flush ti.chain `_
     r.flush bi.chain `_
     return { tree := sadd 1 (sadd ti.tree bi.tree), depth := max ti.depth bi.depth + 1 }
-  | .letE _ t v b _ =>
+  | .letE n t v b _ =>
     let ti ← visit c r fv t
     let bi ← visit c r fv b
     r.flush ti.chain `_
     r.flush bi.chain `_
     if !b.hasLooseBVar 0 && proofHead c fv v then
       r.deadHave.modify (· + 1)
+      r.deadNames.modify (·.push (n, headConst v))
       return { tree := sadd 1 (sadd ti.tree bi.tree), depth := max ti.depth bi.depth + 1,
                forest := bi.forest }
     let vi ← visit c r fv v

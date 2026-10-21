@@ -96,6 +96,8 @@ structure R where
   auxExp : IO.Ref (Std.HashMap USize Expr)
   seq : IO.Ref (Array Nat)
   deadHave : IO.Ref Nat
+  /-- The dead `have`s, as the bound name and the head constant of the unused proof. -/
+  deadNames : IO.Ref (Array (Name × Name))
   binfo : IO.Ref (Std.HashMap Name (Array BinderInfo))
   resClass : IO.Ref (Std.HashMap Name (Option Name))
   chosen : IO.Ref (Std.HashMap Name Bool)
@@ -105,12 +107,12 @@ def R.new : BaseIO R := do
     memo := ← IO.mkRef {}, dag := ← IO.mkRef 0, consts := ← IO.mkRef {}, fps := ← IO.mkRef {}
     uses := ← IO.mkRef {}, occ := ← IO.mkRef {}, site := ← IO.mkRef 0, hmemo := ← IO.mkRef {}
     dcount := ← IO.mkRef {}, direct := ← IO.mkRef {}
-    auxExp := ← IO.mkRef {}, seq := ← IO.mkRef #[], deadHave := ← IO.mkRef 0
+    auxExp := ← IO.mkRef {}, seq := ← IO.mkRef #[], deadHave := ← IO.mkRef 0, deadNames := ← IO.mkRef #[]
     binfo := ← IO.mkRef {}, resClass := ← IO.mkRef {}, chosen := ← IO.mkRef {} }
 
 def R.reset (r : R) : BaseIO Unit := do
   r.memo.set {}; r.dag.set 0; r.consts.set {}; r.fps.set {}; r.uses.set {}; r.occ.set {}
-  r.auxExp.set {}; r.seq.set #[]; r.deadHave.set 0; r.dcount.set {}; r.direct.set {}
+  r.auxExp.set {}; r.seq.set #[]; r.deadHave.set 0; r.deadNames.set #[]; r.dcount.set {}; r.direct.set {}
 
 /-- The binder kinds of a constant's arguments. -/
 def binfoOf (env : Environment) (n : Name) : Array BinderInfo := Id.run do
