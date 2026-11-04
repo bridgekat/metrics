@@ -1,3 +1,7 @@
+/-
+Copyright (c) 2026 Metrics contributors. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
 import Metrics.Analyze
 import Metrics.Replace
 import Metrics.Leak
